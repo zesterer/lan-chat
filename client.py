@@ -188,7 +188,10 @@ class Client:
 		self.print(msg)
 
 	def handleRES(self, msg):
-		pass # Stub
+		if msg == "USED_NIC":
+		    self.print("Error: Nickname already in use!")
+		elif msg == "BAD_NICK":
+		    self.print("Error: Nickname is invalid!")
 
 	def handleJON(self, msg):
 		self.print(msg + " joined the chat")

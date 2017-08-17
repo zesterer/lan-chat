@@ -189,6 +189,8 @@ class Server:
 				self.topic = body
 				for c in self.clients:
 					self.send(c, "TOP:" + client.nick + ":" + self.topic)
+			else:
+			    self.send(client, "TXT:Unknown command")
 
 	def handleQIT(self, client, msg):
 		if client != None:
