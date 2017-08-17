@@ -19,6 +19,7 @@ class Client:
 		self.display_mutex = Lock()
 
 		self.nick = nick
+		self.beep = True
 
 		self.host_at(s_ip, s_port)
 		_thread.start_new_thread(self.output, ())
@@ -56,6 +57,12 @@ class Client:
 					self.parseNIC(body)
 				elif cmd == "help":
 					self.parseHELP(body)
+				elif cmd == "beep":
+					self.beep = !self.beep
+					if self.beep:
+					    self.print("Beep enabled")
+					else:
+					    self.print("Beep disabled")
 				else:
 					self.parseCMD(cmd, body)
 			else:
@@ -76,7 +83,7 @@ class Client:
 			self.send("NIC:" + msg)
 
 	def parseHELP(self, msg):
-		print("Possible commands: /help, /pm, /nick")
+		print("Possible commands: /help, /pm, /nick, /beep")
 		print("Note that the server may support other commands")
 		print("You can find out by doing /shelp")
 
@@ -156,7 +163,7 @@ class Client:
 
 	def handleNIC(self, msg):
 		self.nick = msg
-		self.ping()
+		self.beep()
 
 	def handleMSG(self, msg):
 		try:
@@ -166,7 +173,7 @@ class Client:
 			return
 
 		self.print(nick + " : " + body)
-		self.ping()
+		self.beep()
 
 	def handlePM2(self, msg):
 		try:
@@ -175,7 +182,7 @@ class Client:
 		except ValueError:
 			return
 		self.print("(private) " + nick + " : " + body)
-		self.ping()
+		self.beep()
 
 	def handleTXT(self, msg):
 		self.print(msg)
@@ -213,26 +220,27 @@ class Client:
 			self.print("Topic: " + topic)
 		else:
 			self.print(nick + " changed the topic to " + topic)
-		self.ping()
+		self.beep()
 
 	def handleKIC(self, msg):
 		self.print("You have been kicked from the server : " + msg)
-		self.ping()
+		self.beep()
 
 	def handleDIE(self, msg):
 		self.print("The server has shut down : ", reason)
-		self.ping()
+		self.beep()
 
 	def print(self, msg):
 		self.buffer_mutex.acquire()
 		self.recv_buffer.append(msg)
 		self.buffer_mutex.release()
 
-	def ping(self):
-	    if platform == "linux" or platform == "linux2":
-	        os.system("play --no-show-progress --null --channels 1 synth 0.2 sine 1000")
-	    elif platform == "win32":
-	        winsound.Beep(1000, 200)
+	def beep(self):
+	    if self.beep:
+    	    if platform == "linux" or platform == "linux2":
+    	        os.system("play --no-show-progress --null --channels 1 synth 0.2 sine 1000")
+    	    elif platform == "win32":
+    	        winsound.Beep(1000, 200)
 
 	def send(self, msg):
 		if self.sock != None:
