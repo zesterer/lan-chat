@@ -2,11 +2,12 @@ import _thread
 import socket
 from threading import Lock
 from sys import platform
+import os
 
 if platform == "linux" or platform == "linux2":
-    import os
+	import os
 elif platform == "win32":
-    import winsound
+	import winsound
 
 class Client:
 	def __init__(self, ip, port, s_ip, s_port, nick):
@@ -19,7 +20,7 @@ class Client:
 		self.display_mutex = Lock()
 
 		self.nick = nick
-		self.beep = True
+		self.do_beep = True
 
 		self.host_at(s_ip, s_port)
 		_thread.start_new_thread(self.output, ())
@@ -58,11 +59,11 @@ class Client:
 				elif cmd == "help":
 					self.parseHELP(body)
 				elif cmd == "beep":
-					self.beep = !self.beep
-					if self.beep:
-					    self.print("Beep enabled")
+					self.do_beep = not self.do_beep
+					if self.do_beep:
+						self.print("Beep enabled")
 					else:
-					    self.print("Beep disabled")
+						self.print("Beep disabled")
 				else:
 					self.parseCMD(cmd, body)
 			else:
@@ -189,9 +190,9 @@ class Client:
 
 	def handleRES(self, msg):
 		if msg == "USED_NIC":
-		    self.print("Error: Nickname already in use!")
+			self.print("Error: Nickname already in use!")
 		elif msg == "BAD_NICK":
-		    self.print("Error: Nickname is invalid!")
+			self.print("Error: Nickname is invalid!")
 
 	def handleJON(self, msg):
 		self.print(msg + " joined the chat")
@@ -239,22 +240,61 @@ class Client:
 		self.buffer_mutex.release()
 
 	def beep(self):
-	    if self.beep:
-    	    if platform == "linux" or platform == "linux2":
-    	        os.system("play --no-show-progress --null --channels 1 synth 0.2 sine 1000")
-    	    elif platform == "win32":
-    	        winsound.Beep(1000, 200)
+		if self.do_beep:
+			if platform == "linux" or platform == "linux2":
+				os.system("play --no-show-progress --null --channels 1 synth 0.2 sine 1000")
+			elif platform == "win32":
+				winsound.Beep(1000, 200)
 
 	def send(self, msg):
 		if self.sock != None:
 			self.sock.sendto(str.encode(msg), (self.s_ip, self.s_port))
 
+CFG_FILE = "client.cfg"
+
 if __name__ == "__main__":
-	ip = str(input("Enter your local IP: "))
-	port = int(input("Enter your local port: "))
-	s_ip = str(input("Enter the server IP: "))
-	s_port = int(input("Enter the server port: "))
-	nick = str(input("Enter your nickname: "))
+
+	read = False
+	if os.path.isfile(CFG_FILE):
+		y = str(input("Configuration file found. Type 'y' to load: ")).lower()
+		if y == "y":
+			cfg = open(CFG_FILE, "r")
+			read = True
+			for line in cfg.readlines():
+				if line[0:3] == "ip:":
+					ip = line[3:].strip()
+				elif line[0:5] == "port:":
+					port = int(line[5:].strip())
+				if line[0:4] == "sip:":
+					s_ip = line[4:].strip()
+				if line[0:6] == "sport:":
+					s_port = int(line[6:].strip())
+				if line[0:5] == "nick:":
+					nick = line[5:].strip()
+			cfg.close()
+			print("Using ip = " + ip)
+			print("Using port = " + str(port))
+			print("Using s_ip = " + s_ip)
+			print("Using s_port = " + str(s_port))
+			print("Using nick = " + nick)
+
+	if not read:
+		ip = str(input("Enter your local IP: "))
+		port = int(input("Enter your local port: "))
+		s_ip = str(input("Enter the server IP: "))
+		s_port = int(input("Enter the server port: "))
+		nick = str(input("Enter your nickname: "))
+
+		y = str(input("Type 'y' to save configuration: ")).lower()
+		if y == "y":
+			cfg = open(CFG_FILE, "w")
+			cfg.write("ip:" + ip + "\n")
+			cfg.write("port:" + str(port) + "\n")
+			cfg.write("sip:" + s_ip + "\n")
+			cfg.write("sport:" + str(s_port) + "\n")
+			cfg.write("nick:" + nick + "\n")
+			cfg.close()
+
 	print("Starting client... Press <return> to start talking, and type 'q' to quit.")
 	client = Client(ip, port, s_ip, s_port, nick)
 	client.run()
