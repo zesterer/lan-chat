@@ -183,7 +183,7 @@ class Client:
 			reason = msg[msg.index(":") + 1:]
 		except ValueError:
 			return
-		self.print(msg + " left the chat (" + reason + ")")
+		self.print(nick + " left the chat (" + reason + ")")
 
 	def handleNCH(self, msg):
 		try:
