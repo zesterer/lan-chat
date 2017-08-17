@@ -1,0 +1,33 @@
+# Message Format
+
+[<prefix>':']+<body>
+
+# Client -> Server Messages
+
+KAL                  # Send a keep-alive ping
+CON:<nick>           # Connect to a server
+NIC:<nick>           # Attempt to set the client's nickname
+MSG:<message>        # Broadcast a message to the server
+PM2:<nick>:<message> # Send a private message to a nickname
+CMD:<id>:<command>   # Send a command to the server with ID
+QIT:<farewell>       # Notify the server that you are quitting
+
+# Server -> Client Messages
+
+KAL                  # Send a keep-alive ping
+NIC:<nick>           # Set the nickname of a client
+MSG:<nick>:<message> # Notify of a broadcasted message from a nickname
+PM2:<nick>:<message> # Notify of a private message from a nickname
+TXT:<message>        # Send raw text to the client
+RES:<id>:<message>   # Respond to a command with ID
+JON:<nick>           # Notify that a nickname has joined
+LEV:<nick>:<reason>  # Notify that a nickname has left for a reason
+NCH:<old>:<new>      # Notify that the nickname of a client has changed
+TOP:<nick>:<topic>   # Notify that the topic has been update by a nickname
+KIC:<reason>         # Notify that the client has been kicked for a reason
+DIE:<reason>         # Notify that the server is shutting down for a reason
+
+# Responses (RES)
+
+BAD_NICK
+USED_NIC
