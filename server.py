@@ -8,7 +8,7 @@ PRIV_NONE = 0
 PRIV_USER = 1
 PRIV_ADMIN = 2
 
-TIMEOUT = 10
+TIMEOUT = 60
 
 def valid_nick(nick): # Stub
 	return True
