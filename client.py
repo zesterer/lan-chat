@@ -1,6 +1,12 @@
 import _thread
 import socket
 from threading import Lock
+from sys import platform
+
+if platform == "linux" or platform == "linux2":
+    import os
+elif platform == "win32":
+    import winsound
 
 class Client:
 	def __init__(self, ip, port, s_ip, s_port, nick):
@@ -150,6 +156,7 @@ class Client:
 
 	def handleNIC(self, msg):
 		self.nick = msg
+		self.ping()
 
 	def handleMSG(self, msg):
 		try:
@@ -159,6 +166,7 @@ class Client:
 			return
 
 		self.print(nick + " : " + body)
+		self.ping()
 
 	def handlePM2(self, msg):
 		try:
@@ -167,6 +175,7 @@ class Client:
 		except ValueError:
 			return
 		self.print("(private) " + nick + " : " + body)
+		self.ping()
 
 	def handleTXT(self, msg):
 		self.print(msg)
@@ -204,17 +213,26 @@ class Client:
 			self.print("Topic: " + topic)
 		else:
 			self.print(nick + " changed the topic to " + topic)
+		self.ping()
 
 	def handleKIC(self, msg):
 		self.print("You have been kicked from the server : " + msg)
+		self.ping()
 
 	def handleDIE(self, msg):
 		self.print("The server has shut down : ", reason)
+		self.ping()
 
 	def print(self, msg):
 		self.buffer_mutex.acquire()
 		self.recv_buffer.append(msg)
 		self.buffer_mutex.release()
+
+	def ping(self):
+	    if platform == "linux" or platform == "linux2":
+	        os.system("play --no-show-progress --null --channels 1 synth 0.2 sine 1000")
+	    elif platform == "win32":
+	        winsound.Beep(1000, 200)
 
 	def send(self, msg):
 		if self.sock != None:
